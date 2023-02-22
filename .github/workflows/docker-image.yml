@@ -13,6 +13,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: |
+        docker build --build-arg API_KEY_ARG=${{ secrets.API_KEY }} . \
+          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quiz_api:latest
+        docker tag ${{ secrets.DOCKERHUB_USERNAME }}/quiz_api:latest \
+          ${{ secrets.DOCKERHUB_USERNAME }}/quiz_api:${GITHUB_SHA::7}
+        
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/quiz_api:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/quiz_api:${GITHUB_SHA::7}
+
