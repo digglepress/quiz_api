@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  quiz:
+    build: .
+    image: quiz
+    container_name: quiz
+    env_file:
+      - .env
