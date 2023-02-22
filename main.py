@@ -1,4 +1,5 @@
 import os
+import sys
 from dataclasses import dataclass
 
 from quiz_api import quiz_factory
@@ -77,3 +78,5 @@ if __name__ == '__main__':
         print()
         print(f'to quit, type any of the following: ', ", ".join(i for i in quit_keys))
         start_quiz = input('start quiz? ')
+    print("thank you for your time, see you soon.")
+    sys.exit(0)
