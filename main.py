@@ -1,10 +1,10 @@
 import os
 from dataclasses import dataclass
 
-from questions import questions
+from quiz_api import quiz_factory
 
 
-# print(questions)
+# print(quiz_factory())
 
 
 @dataclass
@@ -18,47 +18,62 @@ class Option:
 
 @dataclass
 class Quiz:
-    id: int
     question: str
     answer: int
     options: list
     tags: list
 
-    def is_correct(self, answer: str):
+    def is_correct(self, answer: str) -> bool:
         return answer == self.answer
 
     @classmethod
-    def get_quizzes(cls) -> list:
+    def get_quizzes(cls, question_set: list) -> list:
         quizzes = [Quiz(
-            id=question['id'],
             question=question['question'],
             answer=question['correct_answer'],
             tags=[t['name'] for t in question['tags']],
             options=[Option(key=key.split('_')[1], value=value) for key, value in question['answers'].items()]
-        ) for question in questions]
+        ) for question in question_set]
         return quizzes
 
 
-score = 0
-index = 1
-if __name__ == '__main__':
-    for quiz in Quiz.get_quizzes():
+def main(questions: list) -> int:
+    """
+    Quiz Builder
+    :param questions:
+    :return: int
+    """
+    score_count = 0
+    index = 1
+    quizzes = Quiz.get_quizzes(questions)
+    for quiz in quizzes:
         print()
-        print(f"question {index} of {len(Quiz.get_quizzes())}")
+        print(f"question {index} of {len(quizzes)}")
         print(quiz.question)
 
         for option in quiz.options:
             print(option)
-        for tag in quiz.tags:
-            print('tags: ', ''.join(tag), '\n', end='')
+
+        print('tags: ', ', '.join(tag for tag in quiz.tags), '\n', end='')
 
         guess = input('select option: ')
         if quiz.is_correct(f"answer_{guess.lower()}"):
-            score += 1
+            score_count += 1
         index += 1
         os.system('clear')
+    return score_count
 
-    print()
-    print()
-    mark = int(score / len(Quiz.get_quizzes()) * 100)
-    print(f"you scored {mark}% out of {len(Quiz.get_quizzes())} questions")
+
+start_quiz = ""
+
+if __name__ == '__main__':
+    quit_keys = ["n", 'N', "q", 'Q']
+    while start_quiz not in quit_keys:
+        question_data = quiz_factory()
+        result = main(question_data)
+        print()
+        score = int(result / len(question_data) * 100)
+        print(f"you scored {score}% out of {len(question_data)} questions")
+        print()
+        print(f'to quit, type any of the following: ', ", ".join(i for i in quit_keys))
+        start_quiz = input('start quiz? ')
